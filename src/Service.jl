@@ -1,5 +1,6 @@
 module Service
 
+using Dates, ExpiringCaches
 using ..Model, ..Mapper
 
 function createShoppingCart(obj)
@@ -9,7 +10,7 @@ function createShoppingCart(obj)
     return cart
 end
 
-function getShoppingCart(id::Int64)::ShoppingCart
+@cacheable Dates.Hour(1) function getShoppingCart(id::Int64)::ShoppingCart
     Mapper.get(id)
 end
 
@@ -17,13 +18,13 @@ function updateShoppingCart(id, updated)
     cart = Mapper.get(id)
     cart.items = updated.items
     Mapper.update(cart)
-    # delete!(ExpiringCaches.getcache(getShoppingCart), (id,))
+    delete!(ExpiringCaches.getcache(getShoppingCart), (id,))
     return cart
 end
 
 function deleteShoppingCart(id)
     Mapper.delete(id)
-    # delete!(ExpiringCaches.getcache(getShoppingCart), (id,))
+    delete!(ExpiringCaches.getcache(getShoppingCart), (id,))
     return
 end
 
